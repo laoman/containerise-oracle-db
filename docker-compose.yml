@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  oracle-db1:
+    image: oracle/database:19.3.0-ee
+    container_name: ${DB1_SERVICE_NAME:-oracle-db1}
+    environment:
+      - ORACLE_SID=${DB1_SID:-ORCLCDB1}
+      - ORACLE_PDB=${DB1_PDB:-ORCLPDB1}
+      - ORACLE_PWD=${DB1_PWD:-Welcome123456}
+    ports:
+      - "${DB1_PORT:-1521}:1521"
+      - "5500:5500"
+    volumes:
+      - ./oradata/db1:/opt/oracle/oradata
+    restart: always
+
+  oracle-db2:
+    image: oracle/database:19.3.0-ee
+    container_name: ${DB2_SERVICE_NAME:-oracle-db2}
+    environment:
+      - ORACLE_SID=${DB2_SID:-ORCLCDB2}
+      - ORACLE_PDB=${DB2_PDB:-ORCLPDB2}
+      - ORACLE_PWD=${DB2_PWD:-Welcome123456}
+    ports:
+      - "${DB2_PORT:-1522}:1521"
+      - "5501:5500"
+    volumes:
+      - ./oradata/db2:/opt/oracle/oradata
+    restart: always
+
+  monitoring:
+    build: ./monitoring
+    container_name: oracle-monitoring
+    environment:
+      - DB1_NAME=${DB1_SERVICE_NAME:-oracle-db1}
+      - DB1_HOST=oracle-db1
+      - DB1_PORT=1521
+      - DB1_SID=${DB1_SID:-ORCLCDB1}
+      - DB1_PWD=${DB1_PWD:-Welcome123456}
+      - DB2_NAME=${DB2_SERVICE_NAME:-oracle-db2}
+      - DB2_HOST=oracle-db2
+      - DB2_PORT=1521
+      - DB2_SID=${DB2_SID:-ORCLCDB2}
+      - DB2_PWD=${DB2_PWD:-Welcome123456}
+    ports:
+      - "8501:8501"
+    depends_on:
+      - oracle-db1
+      - oracle-db2
+    restart: always
