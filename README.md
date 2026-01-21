@@ -29,19 +29,32 @@ Once the setup is complete, the following services will be available:
 | **oracle-db1** | `oracle-db1`    | 1521         | ORCLCDB1 | ORCLPDB1 |
 | **oracle-db2** | `oracle-db2`    | 1522         | ORCLCDB2 | ORCLPDB2 |
 
-### Monitoring Dashboard
+### Monitoring Dashboard 📊
 
 *   **URL:** [http://localhost:8501](http://localhost:8501)
-*   **Description:** A Streamlit application that shows the status, version, and active sessions of both databases. It also displays connection credentials for easy reference.
+*   **Description:** A custom Streamlit UI that provides:
+    *   **Health Checks:** Real-time connection status for both `back-office-db` and `real-time-db`.
+    *   **Credentials:** Displays connection strings and passwords for easy copy-paste.
+    *   **Metrics:** Shows database version, uptime, and active session counts.
 
 ## Configuration
 
 *   **`.env`**: Contains database names, ports, and passwords.
 *   **`docker-compose.yml`**: orchestration configuration.
 
-## Managing Containers
+## CLI Usage
 
-*   **Logs:** `docker-compose logs -f`
-*   **Stop:** `docker-compose stop`
-*   **Start:** `docker-compose start`
-*   **Down (Remove):** `docker-compose down`
+The `setup-oracle-database.sh` script is the primary tool for managing this environment.
+
+**Usage:** `./setup-oracle-database.sh [COMMAND]`
+
+| Command | Description |
+| :--- | :--- |
+| `setup` | **Run first.** Builds the Docker image, creates, and starts containers. |
+| `start` | Starts existing containers that were stopped. |
+| `stop` | Stops running containers. |
+| `restart`| Restarts all containers. |
+| `status` | Shows container status. |
+| `logs` | Shows and follows container logs. |
+| `clean` | **Reset.** Removes all containers, volumes, and the custom Docker image. |
+| `down` | Removes containers and networks. |
