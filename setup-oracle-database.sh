@@ -92,8 +92,23 @@ do_setup() {
         
         # Stop running containers if they exist
         if [ -f "docker-compose.yml" ]; then
-            $DOCKER_COMPOSE_CMD down || true
+            $DOCKER_COMPOSE_CMD down --volumes --remove-orphans || true
         fi
+
+        # Robust Cleanup: Remove any container using the Oracle Database image
+        # This handles cases where container names changed in .env but old containers are still hogging ports
+        if command -v docker &> /dev/null; then
+             echo "Checking for leftover Oracle containers..."
+             # Get IDs of containers using the oracle image
+             local oracle_containers=$(docker ps -a --filter ancestor=$DOCKER_IMAGE_NAME -q)
+             if [ -n "$oracle_containers" ]; then
+                 echo "Removing leftover Oracle containers..."
+                 docker rm -f $oracle_containers || warning "Failed to remove some Oracle containers"
+             fi
+        fi
+
+        # Explicitly remove know monitoring container to prevent conflicts
+        docker rm -f oracle-monitoring 2>/dev/null || true
         
         # Remove image if it exists
         if docker image inspect $DOCKER_IMAGE_NAME >/dev/null 2>&1; then
