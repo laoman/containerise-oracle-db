@@ -8,11 +8,21 @@ services:
       - ORACLE_SID=${DB1_SID:-ORCLCDB1}
       - ORACLE_PDB=${DB1_PDB:-ORCLPDB1}
       - ORACLE_PWD=${DB1_PWD:-Welcome123456}
+      - ORACLE_CHARACTERSET=${DB_CHARACTERSET:-AL32UTF8}
+      - NLS_LENGTH_SEMANTICS=${NLS_LENGTH_SEMANTICS:-CHAR}
+      - NLS_TERRITORY=${NLS_TERRITORY:-AMERICA}
+      - NLS_LANGUAGE=${NLS_LANGUAGE:-AMERICAN}
     ports:
       - "${DB1_PORT:-1521}:1521"
       - "5500:5500"
     volumes:
       - ./oradata/db1:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "/opt/oracle/checkDBStatus.sh"]
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 2m
     restart: always
 
   oracle-db2:
@@ -22,29 +32,52 @@ services:
       - ORACLE_SID=${DB2_SID:-ORCLCDB2}
       - ORACLE_PDB=${DB2_PDB:-ORCLPDB2}
       - ORACLE_PWD=${DB2_PWD:-Welcome123456}
+      - ORACLE_CHARACTERSET=${DB_CHARACTERSET:-AL32UTF8}
+      - NLS_LENGTH_SEMANTICS=${NLS_LENGTH_SEMANTICS:-CHAR}
+      - NLS_TERRITORY=${NLS_TERRITORY:-AMERICA}
+      - NLS_LANGUAGE=${NLS_LANGUAGE:-AMERICAN}
     ports:
       - "${DB2_PORT:-1522}:1521"
       - "5501:5500"
     volumes:
       - ./oradata/db2:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "/opt/oracle/checkDBStatus.sh"]
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 2m
+    depends_on:
+      oracle-db1:
+        condition: service_healthy
     restart: always
 
   monitoring:
     build: ./monitoring
+    image: oracle-monitoring
     container_name: oracle-monitoring
     environment:
       - DB1_NAME=${DB1_SERVICE_NAME:-oracle-db1}
       - DB1_HOST=oracle-db1
       - DB1_PORT=1521
       - DB1_SID=${DB1_SID:-ORCLCDB1}
+      - DB1_PDB=${DB1_PDB:-ORCLPDB1}
+      - DB1_USER=SYS
       - DB1_PWD=${DB1_PWD:-Welcome123456}
+      - DB1_CONTAINER_NAME=${DB1_SERVICE_NAME:-oracle-db1}
+
       - DB2_NAME=${DB2_SERVICE_NAME:-oracle-db2}
       - DB2_HOST=oracle-db2
       - DB2_PORT=1521
       - DB2_SID=${DB2_SID:-ORCLCDB2}
+      - DB2_PDB=${DB2_PDB:-ORCLPDB2}
+      - DB2_USER=SYS
       - DB2_PWD=${DB2_PWD:-Welcome123456}
+      - DB2_CONTAINER_NAME=${DB2_SERVICE_NAME:-oracle-db2}
     ports:
       - "8501:8501"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - oracle-db1
       - oracle-db2
