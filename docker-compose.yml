@@ -21,8 +21,8 @@ services:
       test: ["CMD", "/opt/oracle/checkDBStatus.sh"]
       interval: 1m
       timeout: 30s
-      retries: 5
-      start_period: 2m
+      retries: 30
+      start_period: 5m
     restart: always
 
   oracle-db2:
@@ -45,8 +45,8 @@ services:
       test: ["CMD", "/opt/oracle/checkDBStatus.sh"]
       interval: 1m
       timeout: 30s
-      retries: 5
-      start_period: 2m
+      retries: 30
+      start_period: 5m
     depends_on:
       oracle-db1:
         condition: service_healthy
@@ -78,7 +78,7 @@ services:
       - "8501:8501"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - oracle-db1
-      - oracle-db2
+#   depends_on:
+#     - oracle-db1
+#     - oracle-db2
     restart: always

@@ -42,7 +42,7 @@ def get_container_logs(container_name):
     try:
         container = docker_client.containers.get(container_name)
         # Fetch last 50 lines
-        return container.logs(tail=50).decode('utf-8')
+        return container.logs(tail=150).decode('utf-8')
     except Exception as e:
         return f"Error reading logs for {container_name}: {str(e)}"
 
